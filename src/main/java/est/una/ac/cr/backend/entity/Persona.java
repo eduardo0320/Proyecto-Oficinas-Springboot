@@ -22,12 +22,18 @@ public class Persona {
     private String telefono;
     private String cargo;
     private String estado;
-    private Boolean enOficina;
+    private Boolean enOficina = false;
 
 
     @ManyToOne
-    @JoinColumn(name = "oficina_id") // esta columna será la clave foránea
+    @JoinColumn(name = "oficina_id")
     private Oficina oficina;
+
+    @PrePersist
+    public void prePersist() {
+        if (enOficina == null) enOficina = false;
+
+    }
 
 //
 }

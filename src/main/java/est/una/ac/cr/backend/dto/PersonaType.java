@@ -1,6 +1,4 @@
 package est.una.ac.cr.backend.dto;
-
-import est.una.ac.cr.backend.entity.Oficina;
 import est.una.ac.cr.backend.entity.Persona;
 import jakarta.xml.bind.annotation.XmlAccessType;
 import jakarta.xml.bind.annotation.XmlAccessorType;
@@ -59,6 +57,4 @@ public class PersonaType {
         this.enOficina = persona.getEnOficina();
     }
 
-    public PersonaType() {
-    }
 }

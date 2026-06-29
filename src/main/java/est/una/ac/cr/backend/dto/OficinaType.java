@@ -47,7 +47,5 @@ public class OficinaType {
         }
     }
 
-    public OficinaType() {
-    }
 }
 

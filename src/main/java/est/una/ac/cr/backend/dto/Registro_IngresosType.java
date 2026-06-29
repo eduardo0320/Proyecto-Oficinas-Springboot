@@ -1,6 +1,6 @@
 package est.una.ac.cr.backend.dto;
 
-import est.una.ac.cr.backend.entity.Registro_Ingresos;
+import est.una.ac.cr.backend.entity.RegistroIngresos;
 import jakarta.xml.bind.annotation.XmlAccessType;
 import jakarta.xml.bind.annotation.XmlAccessorType;
 import jakarta.xml.bind.annotation.XmlType;
@@ -25,22 +25,19 @@ public class Registro_IngresosType {
     private String tipo;
     private LocalDate fecha;
     private LocalTime Hora;
-    private String persona;
+    private String nombrePersona;
+    private String nombreOficina;
 
 
-    public Registro_IngresosType(Registro_Ingresos registroIngresos) {
+
+    public Registro_IngresosType(RegistroIngresos registroIngresos) {
         this.id = registroIngresos.getId();
         this.tipo = registroIngresos.getTipo();
         this.fecha = registroIngresos.getFecha();
         Hora = registroIngresos.getHora();
+        this.nombrePersona = registroIngresos.getNombrePersona();
+        this.nombreOficina = registroIngresos.getNombreOficina();
 
-        if(registroIngresos.getPersona()!= null){
-            this.persona=registroIngresos.getPersona().getNombre();
-        } else {
-            this.persona="";
-        }
-    }
 
-    public Registro_IngresosType() {
     }
 }

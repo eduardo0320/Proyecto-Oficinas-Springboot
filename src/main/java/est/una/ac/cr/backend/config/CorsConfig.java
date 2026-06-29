@@ -18,7 +18,7 @@ public class CorsConfig {
         config.setAllowedOrigins(List.of("*")); // Permite cualquier origen
         config.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "OPTIONS"));
         config.setAllowedHeaders(List.of("*"));
-        config.setAllowCredentials(false); // IMPORTANTE: debe ser false si allowedOrigins es "*"
+        config.setAllowCredentials(false);
 
         UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
         source.registerCorsConfiguration("/**", config);

@@ -17,10 +17,17 @@ public class Oficina {
     private String direccion;
     private Integer cantidad_maxima;
     private Integer ingresos_activos;
-    private Integer maximoIngresoSimultaneo;
 
     @OneToMany(mappedBy = "oficina")
     private List<Persona> personas;
+
+    @PrePersist
+    public void prePersist() {
+        if(direccion == null) direccion = "";
+        if (cantidad_maxima == null) cantidad_maxima = 0;
+        if (ingresos_activos == null) ingresos_activos = 0;
+
+    }
 
 }
 

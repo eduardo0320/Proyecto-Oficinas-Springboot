@@ -1,7 +1,6 @@
 package est.una.ac.cr.backend.repository;
 
-import est.una.ac.cr.backend.entity.Persona;
-import est.una.ac.cr.backend.entity.Registro_Ingresos;
+import est.una.ac.cr.backend.entity.RegistroIngresos;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
@@ -9,7 +8,7 @@ import org.springframework.stereotype.Repository;
 import java.util.List;
 
 @Repository
-public interface Registro_IngresosRepository extends JpaRepository<Registro_Ingresos, Integer> {
+public interface Registro_IngresosRepository extends JpaRepository<RegistroIngresos, Integer> {
 
     @Query(value = """
         SELECT p.nombre, COUNT(*) as total

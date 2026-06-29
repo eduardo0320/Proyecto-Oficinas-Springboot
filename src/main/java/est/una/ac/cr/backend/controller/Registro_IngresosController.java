@@ -1,36 +1,28 @@
 package est.una.ac.cr.backend.controller;
-
-import est.una.ac.cr.backend.dto.OficinaType;
-import est.una.ac.cr.backend.dto.PersonaType;
 import est.una.ac.cr.backend.dto.Registro_IngresosType;
 import est.una.ac.cr.backend.entity.Oficina;
-import est.una.ac.cr.backend.entity.Persona;
-import est.una.ac.cr.backend.entity.Registro_Ingresos;
+import est.una.ac.cr.backend.entity.RegistroIngresos;
 import est.una.ac.cr.backend.repository.OficinaRepository;
 import est.una.ac.cr.backend.repository.PersonaRepository;
 import est.una.ac.cr.backend.repository.Registro_IngresosRepository;
-import est.una.ac.cr.backend.service.OficinaService;
-import est.una.ac.cr.backend.service.Registro_IngresosService;
+import est.una.ac.cr.backend.service.PersonaService;
+import est.una.ac.cr.backend.service.RegistroIngresosService;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.*;
-
-import java.util.*;
-import java.util.stream.Collectors;
-
+import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
+import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.web.bind.annotation.*;
 import org.springframework.data.domain.Pageable;
-import org.springframework.data.domain.Sort;
+import java.util.*;
+
 
 
 import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.server.ResponseStatusException;
 
 
 @RestController
-@RequestMapping("/api")
+@RequestMapping("/api/registros")
 public class Registro_IngresosController {
 
     @Autowired
@@ -38,79 +30,48 @@ public class Registro_IngresosController {
     @Autowired
     private PersonaRepository personaRepository;
     @Autowired
-    private Registro_IngresosService registro_IngresosService;
+    private RegistroIngresosService registroIngresosService;
     @Autowired
     private OficinaRepository oficinaRepository;
+    private PersonaService personaService;
 
-    @GetMapping("/registros")
-    public List<Registro_IngresosType> obtenerRegistro_Ingresos() {
-        List<Registro_Ingresos> registro_Ingresos = registro_IngresosRepository.findAll();
+    @GetMapping
+    @PreAuthorize("hasAnyRole('ADMIN', 'REGISTRADOR')")
+    public Page<Registro_IngresosType> obtenerRegistros(
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "5") int size) {
 
-        return registro_Ingresos.stream()
-                .map(registro_Ingreso -> new Registro_IngresosType(registro_Ingreso))
-                .collect(Collectors.toList());
-    }
+        Pageable pageable = PageRequest.of(page, size);
 
-    @GetMapping("/paginacion")
-    public List<Registro_IngresosType> mostrarRegistros(@RequestParam(defaultValue = "0") int page) {
-        int size = 5;
-        Pageable pageable = PageRequest.of(page, size, Sort.by("id").ascending());
-        return registro_IngresosRepository.findAll(pageable)
-                .stream()
-                .map(Registro_IngresosType::new)
-                .collect(Collectors.toList());
+        return registroIngresosService.listarRegistros(pageable).map(Registro_IngresosType::new);
     }
 
 
-    @GetMapping("/registros/{id}")
-    public ResponseEntity<Registro_IngresosType> obtenerPorId(@PathVariable Integer id) {
-        return registro_IngresosRepository.findById(id)
-                .map(registro -> ResponseEntity.ok(new Registro_IngresosType(registro)))
-                .orElse(ResponseEntity.notFound().build());
+    @GetMapping("/obtener/{id}")
+    @PreAuthorize("hasAnyRole('ADMIN', 'REGISTRADOR')")
+    public ResponseEntity<Registro_IngresosType> obtenerRegistroPorId(@PathVariable Integer id) {
+        RegistroIngresos registro = registroIngresosService.buscarRegistro(id);
+        return ResponseEntity.ok(new Registro_IngresosType(registro));
     }
 
-    @PostMapping("/registrador/registros")
-    public Boolean crearRegistro_Ingreso(@RequestBody Registro_Ingresos registro_Ingreso) {
-        int idPersona = registro_Ingreso.getPersona().getIdAuto();
-        Optional<Persona> personaOpt = personaRepository.findById(idPersona);
-
-        if (personaOpt.isPresent()) {
-            Persona persona = personaOpt.get();
-            registro_Ingreso.setPersona(persona);
-
-            if (registro_IngresosService.RegistrarIngreso(registro_Ingreso)) {
-
-                registro_IngresosRepository.save(registro_Ingreso);
-                return true;
-            }
-
-            return false;
-
-        } else {
-            return false;
-        }
+    @PostMapping("/registros/crear")
+    @PreAuthorize("hasAnyRole('ADMIN', 'REGISTRADOR')")
+    public ResponseEntity<Void> crearRegistro(@RequestBody RegistroIngresos registro) {
+        registroIngresosService.agregarRegistro(registro);
+        return ResponseEntity.ok().build();
     }
 
 
-    @DeleteMapping("/registrador/registros/{id}")
-    public ResponseEntity<Void> eliminarRegistro_ingreso(@PathVariable Integer id) {
-        if (registro_IngresosRepository.existsById(id)) {
-            registro_IngresosRepository.deleteById(id);
-            return ResponseEntity.noContent().build();
-        }
-        return ResponseEntity.notFound().build();
+    @DeleteMapping("/eliminar/{id}")
+    @PreAuthorize("hasAnyRole('ADMIN', 'REGISTRADOR')")
+    public ResponseEntity<Void> eliminarRegistro(@PathVariable Integer id) {
+       registroIngresosService.eliminarRegistro(id);
+       return ResponseEntity.ok().build();
     }
 
-    @GetMapping("/registrador/registros/personas")
-    public List<PersonaType> obtenerPersonas() {
-        List<Persona> personas = personaRepository.findAll();
-
-        return personas.stream()
-                .map(persona -> new PersonaType(persona))
-                .collect(Collectors.toList());
-    }
 
     @GetMapping("/registros/top3-entradas")
+    @PreAuthorize("hasAnyRole('ADMIN', 'REGISTRADOR')")
     public ResponseEntity<List<Map<String, Object>>> obtenerTop3Entradas() {
         List<Object[]> resultados = registro_IngresosRepository.findTop3PersonasConMasEntradas();
 
@@ -125,25 +86,15 @@ public class Registro_IngresosController {
     }
 
 
-    @GetMapping("/registros/en-oficina")
-    public ResponseEntity<List<PersonaType>> obtenerPersonasEnOficina() {
-        List<Persona> personas = personaRepository.findPersonasEnOficina();
-        List<PersonaType> resultado = personas.stream()
-                .map(PersonaType::new)
-                .toList();
-
-        return ResponseEntity.ok(resultado);
-    }
-
-
     @GetMapping("/registros/ocupacion-maxima")
+    @PreAuthorize("hasAnyRole('ADMIN', 'REGISTRADOR')")
     public ResponseEntity<List<Map<String, Object>>> obtenerOcupacionMaximaOficinas() {
         List<Oficina> oficinas = oficinaRepository.findAll();
 
         List<Map<String, Object>> respuesta = oficinas.stream().map(oficina -> {
             Map<String, Object> map = new HashMap<>();
             map.put("nombre", oficina.getNombre());
-            map.put("maximoIngresoSimultaneo", oficina.getMaximoIngresoSimultaneo());
+            map.put("maximoIngresoSimultaneo", oficina.getCantidad_maxima());
             return map;
         }).toList();
 
